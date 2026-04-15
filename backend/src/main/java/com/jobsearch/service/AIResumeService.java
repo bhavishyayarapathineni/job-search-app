@@ -103,7 +103,7 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
             userMsg.put("content", prompt);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "nvidia/nemotron-3-nano-30b-a3b:free");
+            body.put("model", "mistralai/mistral-small-3.1-24b-instruct:free");
             body.put("max_tokens", 4000);
             body.put("messages", List.of(systemMsg, userMsg));
 
@@ -114,8 +114,28 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 List<Map> choices = (List<Map>) response.getBody().get("choices");
                 if (choices != null && !choices.isEmpty()) {
-                    Map message = (Map) choices.get(0).get("message");
-                    String tailored = (String) message.get("content");
+                    Map choice = (Map) choices.get(0);
+                    Map message = (Map) choice.get("message");
+                    String tailored = null;
+                    try {
+                        // Try content field first
+                        Object contentObj = message.get("content");
+                        if (contentObj != null && !contentObj.toString().trim().isEmpty()) {
+                            tailored = contentObj.toString();
+                        }
+                        // Do NOT use reasoning field - it contains thinking, not the resume
+                        // Log all message keys for debugging
+                        log.info("Message keys: {}, content length: {}", message.keySet(), 
+                            tailored != null ? tailored.length() : 0);
+                    } catch(Exception ex) {
+                        log.error("Parse error: {}", ex.getMessage());
+                    }
+                    log.info("AI response length: {}", tailored != null ? tailored.length() : "null");
+                    if (tailored == null || tailored.trim().isEmpty()) {
+                        result.put("resume", resume);
+                        result.put("feedback", "AI returned empty. Please try again.");
+                        return result;
+                    }
                     result.put("resume", tailored.trim());
                     result.put("feedback", "Resume rewritten by AI to perfectly match "
                         + jobTitle + " at " + company + "!");
