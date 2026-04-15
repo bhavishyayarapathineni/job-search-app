@@ -1,6 +1,7 @@
 package com.jobsearch.controller;
 
 import com.jobsearch.model.Job;
+import com.jobsearch.service.JobScraperService;
 import com.jobsearch.service.JobService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class JobController {
 
     private final JobService jobService;
+    private final JobScraperService jobScraperService;
 
     @GetMapping
     @Operation(summary = "Get all jobs with pagination")
@@ -43,8 +45,7 @@ public class JobController {
             @RequestParam String jobType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(
-                jobService.getJobsByType(jobType, page, size));
+        return ResponseEntity.ok(jobService.getJobsByType(jobType, page, size));
     }
 
     @GetMapping("/filter/experience")
@@ -53,8 +54,7 @@ public class JobController {
             @RequestParam String level,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(
-                jobService.getJobsByExperience(level, page, size));
+        return ResponseEntity.ok(jobService.getJobsByExperience(level, page, size));
     }
 
     @GetMapping("/{id}")
@@ -68,5 +68,13 @@ public class JobController {
     public ResponseEntity<String> loadSampleJobs() {
         jobService.createSampleJobs();
         return ResponseEntity.ok("Sample jobs loaded successfully!");
+    }
+
+    @PostMapping("/scrape")
+    @Operation(summary = "Manually trigger job scraping")
+    public ResponseEntity<String> triggerScrape() {
+        jobScraperService.scrapeByKeyword("Java Developer");
+        jobScraperService.scrapeByKeyword("Spring Boot Developer");
+        return ResponseEntity.ok("Scraping started! Check logs for results.");
     }
 }
