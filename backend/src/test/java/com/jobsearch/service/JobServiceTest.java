@@ -42,7 +42,6 @@ class JobServiceTest {
 
     @Test
     void getAllJobs_ReturnsPagedJobs() {
-        Pageable pageable = PageRequest.of(0, 12);
         Page<Job> mockPage = new PageImpl<>(Arrays.asList(testJob));
         when(jobRepository.findByIsActiveTrue(any(Pageable.class))).thenReturn(mockPage);
 
@@ -56,7 +55,6 @@ class JobServiceTest {
 
     @Test
     void searchJobs_ReturnsMatchingJobs() {
-        Pageable pageable = PageRequest.of(0, 12);
         Page<Job> mockPage = new PageImpl<>(Arrays.asList(testJob));
         when(jobRepository.searchJobs(anyString(), any(Pageable.class))).thenReturn(mockPage);
 
@@ -69,7 +67,6 @@ class JobServiceTest {
 
     @Test
     void getJobsByType_ReturnsFilteredJobs() {
-        Pageable pageable = PageRequest.of(0, 12);
         Page<Job> mockPage = new PageImpl<>(Arrays.asList(testJob));
         when(jobRepository.findByJobTypeAndIsActiveTrue(anyString(), any(Pageable.class))).thenReturn(mockPage);
 

@@ -15,6 +15,12 @@ public class AIResumeService {
     private String apiKey;
 
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+    private static final String KEY_SCORE = "score";
+    private static final String KEY_RESUME = "resume";
+    private static final String KEY_FEEDBACK = "feedback";
+    private static final String KEY_MATCHED = "matchedKeywords";
+    private static final String KEY_MISSING = "missingKeywords";
+    private static final String KEY_CONTENT = "content";
     private static final List<String> MODELS = Arrays.asList(
         "nvidia/nemotron-3-nano-30b-a3b:free",
         "google/gemma-4-31b-it:free",
@@ -29,9 +35,9 @@ public class AIResumeService {
         Map<String, Object> result = new HashMap<>();
 
         Map<String, Object> beforeAnalysis = deepAnalyze(resumeText, jobDescription);
-        int beforeScore = (int) beforeAnalysis.get("score");
-        List<String> missingKeywords = (List<String>) beforeAnalysis.get("missingKeywords");
-        List<String> matchedKeywords = (List<String>) beforeAnalysis.get("matchedKeywords");
+        int beforeScore = (int) beforeAnalysis.get(KEY_SCORE);
+        List<String> missingKeywords = (List<String>) beforeAnalysis.get(KEY_MISSING);
+        List<String> matchedKeywords = (List<String>) beforeAnalysis.get(KEY_MATCHED);
 
         String tailoredResume;
         String feedback;
@@ -41,8 +47,8 @@ public class AIResumeService {
             log.info("Using OpenRouter AI to tailor resume for: {} at {}", jobTitle, company);
             Map<String, Object> aiResult = callOpenRouter(
                 resumeText, jobDescription, jobTitle, company, missingKeywords, sanitizedApiKey);
-            tailoredResume = (String) aiResult.getOrDefault("resume", resumeText);
-            feedback = (String) aiResult.getOrDefault("feedback", "Resume tailored successfully.");
+            tailoredResume = (String) aiResult.getOrDefault(KEY_RESUME, resumeText);
+            feedback = (String) aiResult.getOrDefault(KEY_FEEDBACK, "Resume tailored successfully.");
         } else {
             log.warn("No API key found");
             tailoredResume = resumeText;
@@ -50,15 +56,15 @@ public class AIResumeService {
         }
 
         Map<String, Object> afterAnalysis = deepAnalyze(tailoredResume, jobDescription);
-        int afterScore = (int) afterAnalysis.get("score");
+        int afterScore = (int) afterAnalysis.get(KEY_SCORE);
 
         result.put("tailoredResume", tailoredResume);
         result.put("beforeScore", beforeScore);
         result.put("afterScore", afterScore);
         result.put("improvement", afterScore - beforeScore);
-        result.put("matchedKeywords", matchedKeywords);
-        result.put("missingKeywords", missingKeywords);
-        result.put("feedback", feedback);
+        result.put(KEY_MATCHED, matchedKeywords);
+        result.put(KEY_MISSING, missingKeywords);
+        result.put(KEY_FEEDBACK, feedback);
         result.put("fitLevel", getFitLevel(beforeScore));
         result.put("afterFitLevel", getFitLevel(afterScore));
         return result;
@@ -103,11 +109,11 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
 
             Map<String, Object> systemMsg = new HashMap<>();
             systemMsg.put("role", "system");
-            systemMsg.put("content", "You are an expert resume writer and ATS optimization specialist.");
+            systemMsg.put(KEY_CONTENT, "You are an expert resume writer and ATS optimization specialist.");
 
             Map<String, Object> userMsg = new HashMap<>();
             userMsg.put("role", "user");
-            userMsg.put("content", prompt);
+            userMsg.put(KEY_CONTENT, prompt);
 
             Map<String, Object> body = new HashMap<>();
             body.put("max_tokens", 4000);
@@ -126,10 +132,10 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
                         List<Map> choices2 = (List<Map>) testResp.getBody().get("choices");
                         if (choices2 != null && !choices2.isEmpty()) {
                             Map msg2 = (Map) choices2.get(0).get("message");
-                            Object ct2 = msg2 != null ? msg2.get("content") : null;
+                            Object ct2 = msg2 != null ? msg2.get(KEY_CONTENT) : null;
                             if (ct2 != null && !ct2.toString().trim().isEmpty()) {
-                                result.put("resume", ct2.toString().trim());
-                                result.put("feedback", "Resume rewritten by AI using " + m + " to match " + jobTitle + " at " + company + "!");
+                                result.put(KEY_RESUME, ct2.toString().trim());
+                                result.put(KEY_FEEDBACK, "Resume rewritten by AI using " + m + " to match " + jobTitle + " at " + company + "!");
                                 log.info("AI tailored successfully with model: {}", m);
                                 return result;
                             }
@@ -144,13 +150,13 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
             String message = e.getMessage() != null ? e.getMessage() : "Unknown error";
             log.error("OpenRouter error: {}", message);
             if (message.contains("401")) {
-                result.put("feedback", "OpenRouter authentication failed (401). Check OPENROUTER_API_KEY and restart backend.");
+                result.put(KEY_FEEDBACK, "OpenRouter authentication failed (401). Check OPENROUTER_API_KEY and restart backend.");
             } else {
-                result.put("feedback", "AI error: " + message);
+                result.put(KEY_FEEDBACK, "AI error: " + message);
             }
         }
-        result.put("resume", resume);
-        result.putIfAbsent("feedback", "AI tailoring failed. Please try again.");
+        result.put(KEY_RESUME, resume);
+        result.putIfAbsent(KEY_FEEDBACK, "AI tailoring failed. Please try again.");
         return result;
     }
 
@@ -168,9 +174,9 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
     private Map<String, Object> deepAnalyze(String resume, String jd) {
         Map<String, Object> result = new HashMap<>();
         if (resume == null || jd == null) {
-            result.put("score", 0);
-            result.put("matchedKeywords", new ArrayList<>());
-            result.put("missingKeywords", new ArrayList<>());
+            result.put(KEY_SCORE, 0);
+            result.put(KEY_MATCHED, new ArrayList<>());
+            result.put(KEY_MISSING, new ArrayList<>());
             return result;
         }
         List<String> techKeywords = Arrays.asList(
@@ -206,9 +212,9 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
         }
         int total = matched.size() + missing.size();
         int score = total > 0 ? Math.min(100, (matched.size() * 100) / total) : 50;
-        result.put("score", score);
-        result.put("matchedKeywords", matched);
-        result.put("missingKeywords", missing.subList(0, Math.min(15, missing.size())));
+        result.put(KEY_SCORE, score);
+        result.put(KEY_MATCHED, matched);
+        result.put(KEY_MISSING, missing.subList(0, Math.min(15, missing.size())));
         return result;
     }
 
