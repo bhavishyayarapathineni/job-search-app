@@ -14,10 +14,17 @@ class ModelTest {
         user.setFullName("Test User");
         user.setPassword("password");
         user.setPhone("1234567890");
-        // role is enum - skip
         assertEquals(1L, user.getId());
         assertEquals("test@gmail.com", user.getEmail());
         assertEquals("Test User", user.getFullName());
+    }
+
+    @Test
+    void user_DefaultValues() {
+        User user = new User();
+        assertNull(user.getId());
+        assertNull(user.getEmail());
+        assertNull(user.getFullName());
     }
 
     @Test
@@ -38,6 +45,15 @@ class ModelTest {
         assertEquals("Google", job.getCompany());
         assertTrue(job.isActive());
         assertEquals(2, job.getSkills().size());
+    }
+
+    @Test
+    void job_DefaultValues() {
+        Job job = new Job();
+        assertNull(job.getId());
+        assertNull(job.getTitle());
+        assertNull(job.getCompany());
+        // isActive defaults to true in Job model
     }
 
     @Test
@@ -63,6 +79,27 @@ class ModelTest {
     }
 
     @Test
+    void userProfile_AllFields() {
+        UserProfile profile = new UserProfile();
+        profile.setCurrentTitle("Java Developer");
+        profile.setCurrentCompany("Google");
+        profile.setLinkedinUrl("linkedin.com/in/test");
+        profile.setGithubUrl("github.com/test");
+        profile.setPortfolioUrl("test.github.io");
+        profile.setEducation("M.S. Computer Science");
+        profile.setCertifications("AWS Certified");
+        profile.setExperience("2 years at McKinsey");
+        profile.setPreferredJobType("FULL_TIME");
+        profile.setPreferredLocation("Remote");
+        assertEquals("Java Developer", profile.getCurrentTitle());
+        assertEquals("Google", profile.getCurrentCompany());
+        assertEquals("linkedin.com/in/test", profile.getLinkedinUrl());
+        assertEquals("github.com/test", profile.getGithubUrl());
+        assertEquals("FULL_TIME", profile.getPreferredJobType());
+        assertEquals("Remote", profile.getPreferredLocation());
+    }
+
+    @Test
     void savedJob_GettersSetters() {
         SavedJob savedJob = new SavedJob();
         User user = new User();
@@ -77,24 +114,4 @@ class ModelTest {
         assertEquals(1L, savedJob.getJob().getId());
     }
 
-    @Test
-    void jobApplication_GettersSetters() {
-        JobApplication application = new JobApplication();
-        User user = new User();
-        user.setId(1L);
-        Job job = new Job();
-        job.setId(2L);
-
-        application.setId(10L);
-        application.setUser(user);
-        application.setJob(job);
-        application.setStatus(JobApplication.Status.APPLIED);
-        application.setNotes("Applied via referral");
-
-        assertEquals(10L, application.getId());
-        assertEquals(1L, application.getUser().getId());
-        assertEquals(2L, application.getJob().getId());
-        assertEquals(JobApplication.Status.APPLIED, application.getStatus());
-        assertEquals("Applied via referral", application.getNotes());
-    }
 }

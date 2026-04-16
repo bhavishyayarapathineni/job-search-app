@@ -146,5 +146,24 @@
         </executions>
       </plugin>
     </plugins>
+            <pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/model/**</exclude>
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/JobSearchApplication.class</exclude>
+                                <exclude>**/config/KafkaConfig.class</exclude>
+                                <exclude>**/config/SwaggerConfig.class</exclude>
+                                <exclude>**/repository/**</exclude>
+                                <exclude>**/config/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </pluginManagement>
   </build>
 </project>

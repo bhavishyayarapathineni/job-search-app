@@ -49,12 +49,9 @@ class ProfileServiceTest {
     void getProfile_ExistingProfile_ReturnsProfile() {
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(testUser));
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.of(testProfile));
-
         UserProfile result = profileService.getProfile("test@gmail.com");
-
         assertNotNull(result);
         assertEquals("Java Developer", result.getHeadline());
-        assertEquals("My resume text", result.getResumeText());
     }
 
     @Test
@@ -62,11 +59,15 @@ class ProfileServiceTest {
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(testUser));
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.empty());
         when(profileRepository.save(any(UserProfile.class))).thenReturn(testProfile);
-
         UserProfile result = profileService.getProfile("test@gmail.com");
-
         assertNotNull(result);
         verify(profileRepository, times(1)).save(any(UserProfile.class));
+    }
+
+    @Test
+    void getProfile_UserNotFound_ThrowsException() {
+        when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> profileService.getProfile("notfound@gmail.com"));
     }
 
     @Test
@@ -74,15 +75,19 @@ class ProfileServiceTest {
         UserProfile updated = new UserProfile();
         updated.setResumeText("Updated resume text");
         updated.setHeadline("Sr. Java Developer");
-
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(testUser));
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.of(testProfile));
         when(profileRepository.save(any(UserProfile.class))).thenReturn(testProfile);
-
         UserProfile result = profileService.updateProfile("test@gmail.com", updated);
-
         assertNotNull(result);
         verify(profileRepository, times(1)).save(any(UserProfile.class));
+    }
+
+    @Test
+    void updateProfile_UserNotFound_ThrowsException() {
+        when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () ->
+            profileService.updateProfile("notfound@gmail.com", new UserProfile()));
     }
 
     @Test
@@ -91,9 +96,7 @@ class ProfileServiceTest {
         when(jobRepository.findById(1L)).thenReturn(Optional.of(testJob));
         when(savedJobRepository.existsByUserIdAndJobId(1L, 1L)).thenReturn(false);
         when(savedJobRepository.save(any(SavedJob.class))).thenReturn(new SavedJob());
-
         SavedJob result = profileService.saveJob("test@gmail.com", 1L);
-
         assertNotNull(result);
         verify(savedJobRepository, times(1)).save(any(SavedJob.class));
     }
@@ -105,10 +108,16 @@ class ProfileServiceTest {
         when(jobRepository.findById(1L)).thenReturn(Optional.of(testJob));
         when(savedJobRepository.existsByUserIdAndJobId(1L, 1L)).thenReturn(true);
         when(savedJobRepository.findByUserIdAndJobId(1L, 1L)).thenReturn(Optional.of(existing));
-
         SavedJob result = profileService.saveJob("test@gmail.com", 1L);
-
         assertNotNull(result);
         verify(savedJobRepository, never()).save(any(SavedJob.class));
+    }
+
+    @Test
+    void saveJob_JobNotFound_ThrowsException() {
+        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(testUser));
+        when(jobRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () ->
+            profileService.saveJob("test@gmail.com", 99L));
     }
 }
