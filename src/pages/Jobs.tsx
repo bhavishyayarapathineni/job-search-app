@@ -61,12 +61,25 @@ export default function Jobs() {
   };
 
   
+  const [savedJobs, setSavedJobs] = useState<number[]>([]);
+
+  useEffect(() => {
+    API.get('/api/profile/jobs/saved')
+      .then(res => setSavedJobs(res.data.map((s: any) => s.job?.id)))
+      .catch(() => {});
+  }, []);
+
   const handleSaveJob = async (jobId: number) => {
     try {
-      await API.post(`/api/profile/jobs/${jobId}/save`);
-      alert('Job saved successfully!');
+      if (savedJobs.includes(jobId)) {
+        await API.delete(`/api/profile/jobs/${jobId}/save`);
+        setSavedJobs(prev => prev.filter(id => id !== jobId));
+      } else {
+        await API.post(`/api/profile/jobs/${jobId}/save`);
+        setSavedJobs(prev => [...prev, jobId]);
+      }
     } catch (e) {
-      alert('Failed to save job. Please try again.');
+      alert('Failed. Please try again.');
     }
   };
 
@@ -273,7 +286,10 @@ export default function Jobs() {
                   onClick={() => job.sourceUrl ? window.open(job.sourceUrl, '_blank') : null}>
                   Apply Now
                 </button>
-                <button style={s.saveBtn} onClick={() => handleSaveJob(job.id)}>Save Job</button>
+                <button style={savedJobs.includes(job.id) ? s.savedJobBtn : s.saveBtn}
+    onClick={() => handleSaveJob(job.id)}>
+    {savedJobs.includes(job.id) ? '❤️ Saved' : '🤍 Save Job'}
+  </button>
               </div>
             </div>
           ))}
@@ -369,6 +385,7 @@ const s: { [key: string]: React.CSSProperties } = {
   aiBtn: { flex: 1, padding: '9px', background: 'white', color: '#2d6a9f', border: '1.5px solid #2d6a9f', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
   applyBtn: { flex: 1, padding: '9px', background: '#2d6a9f', color: 'white',
     border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
+  savedJobBtn: { flex:1, padding:'9px', background:'#ffebee', color:'#c62828', border:'1.5px solid #c62828', borderRadius:8, cursor:'pointer', fontWeight:600, fontSize:13 },
   saveBtn: { padding: '9px 16px', background: 'white', color: '#2d6a9f',
     border: '1.5px solid #2d6a9f', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
   pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center',
