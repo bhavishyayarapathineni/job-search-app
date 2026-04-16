@@ -14,6 +14,7 @@
   <name>job-search-backend</name>
 
   <properties>
+        <sonar.organization>bhavishyayarapathineni-1</sonar.organization>
     <java.version>17</java.version>
   </properties>
 
