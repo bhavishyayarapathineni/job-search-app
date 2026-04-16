@@ -76,4 +76,25 @@ class ModelTest {
         assertEquals(1L, savedJob.getUser().getId());
         assertEquals(1L, savedJob.getJob().getId());
     }
+
+    @Test
+    void jobApplication_GettersSetters() {
+        JobApplication application = new JobApplication();
+        User user = new User();
+        user.setId(1L);
+        Job job = new Job();
+        job.setId(2L);
+
+        application.setId(10L);
+        application.setUser(user);
+        application.setJob(job);
+        application.setStatus(JobApplication.Status.APPLIED);
+        application.setNotes("Applied via referral");
+
+        assertEquals(10L, application.getId());
+        assertEquals(1L, application.getUser().getId());
+        assertEquals(2L, application.getJob().getId());
+        assertEquals(JobApplication.Status.APPLIED, application.getStatus());
+        assertEquals("Applied via referral", application.getNotes());
+    }
 }

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
@@ -103,5 +105,47 @@ class AIResumeServiceTest {
         assertNotNull(fitLevel);
         assertTrue(fitLevel.equals("EXCELLENT FIT") || fitLevel.equals("GOOD FIT") ||
                    fitLevel.equals("PARTIAL FIT") || fitLevel.equals("NEEDS IMPROVEMENT"));
+    }
+
+    @Test
+    void analyzeAndTailor_WithApiKey_HandlesExternalCallFailureGracefully() throws Exception {
+        Field apiKeyField = AIResumeService.class.getDeclaredField("apiKey");
+        apiKeyField.setAccessible(true);
+        apiKeyField.set(aiResumeService, "sk-or-test-key");
+
+        Map<String, Object> result = aiResumeService.analyzeAndTailor(
+            sampleResume, sampleJD, "Java Developer", "Google"
+        );
+
+        assertNotNull(result.get("tailoredResume"));
+        assertNotNull(result.get("feedback"));
+    }
+
+    @Test
+    void analyzeAndTailor_WithPlaceholderKey_TreatsAsMissingKey() throws Exception {
+        Field apiKeyField = AIResumeService.class.getDeclaredField("apiKey");
+        apiKeyField.setAccessible(true);
+        apiKeyField.set(aiResumeService, "your_openrouter_key_here");
+
+        Map<String, Object> result = aiResumeService.analyzeAndTailor(
+            sampleResume, sampleJD, "Java Developer", "Google"
+        );
+
+        assertEquals("OpenRouter API key is missing or invalid. Set OPENROUTER_API_KEY and restart backend.",
+            result.get("feedback"));
+    }
+
+    @Test
+    void analyzeAndTailor_WithNonOpenRouterPrefix_TreatsAsMissingKey() throws Exception {
+        Field apiKeyField = AIResumeService.class.getDeclaredField("apiKey");
+        apiKeyField.setAccessible(true);
+        apiKeyField.set(aiResumeService, "abc123");
+
+        Map<String, Object> result = aiResumeService.analyzeAndTailor(
+            sampleResume, sampleJD, "Java Developer", "Google"
+        );
+
+        assertEquals("OpenRouter API key is missing or invalid. Set OPENROUTER_API_KEY and restart backend.",
+            result.get("feedback"));
     }
 }
