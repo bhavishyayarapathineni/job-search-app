@@ -15,6 +15,12 @@ public class AIResumeService {
     private String apiKey;
 
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+    private static final List<String> MODELS = Arrays.asList(
+        "nvidia/nemotron-3-nano-30b-a3b:free",
+        "google/gemma-4-31b-it:free",
+        "minimax/minimax-m2.5:free",
+        "arcee-ai/trinity-large-preview:free"
+    );
 
     public Map<String, Object> analyzeAndTailor(
             String resumeText, String jobDescription,
@@ -30,16 +36,17 @@ public class AIResumeService {
         String tailoredResume;
         String feedback;
 
-        if (apiKey != null && !apiKey.isEmpty()) {
+        String sanitizedApiKey = sanitizeApiKey(apiKey);
+        if (sanitizedApiKey != null) {
             log.info("Using OpenRouter AI to tailor resume for: {} at {}", jobTitle, company);
             Map<String, Object> aiResult = callOpenRouter(
-                resumeText, jobDescription, jobTitle, company, missingKeywords);
+                resumeText, jobDescription, jobTitle, company, missingKeywords, sanitizedApiKey);
             tailoredResume = (String) aiResult.getOrDefault("resume", resumeText);
             feedback = (String) aiResult.getOrDefault("feedback", "Resume tailored successfully.");
         } else {
             log.warn("No API key found");
             tailoredResume = resumeText;
-            feedback = "No API key configured.";
+            feedback = "OpenRouter API key is missing or invalid. Set OPENROUTER_API_KEY and restart backend.";
         }
 
         Map<String, Object> afterAnalysis = deepAnalyze(tailoredResume, jobDescription);
@@ -59,14 +66,14 @@ public class AIResumeService {
 
     private Map<String, Object> callOpenRouter(
             String resume, String jd, String jobTitle,
-            String company, List<String> missingKeywords) {
+            String company, List<String> missingKeywords, String sanitizedApiKey) {
 
         Map<String, Object> result = new HashMap<>();
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + apiKey);
+            headers.set("Authorization", "Bearer " + sanitizedApiKey);
             headers.set("HTTP-Referer", "http://localhost:3000");
             headers.set("X-Title", "Job Search App");
 
@@ -103,53 +110,59 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
             userMsg.put("content", prompt);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("model", "mistralai/mistral-small-3.1-24b-instruct:free");
             body.put("max_tokens", 4000);
             body.put("messages", List.of(systemMsg, userMsg));
-
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                OPENROUTER_URL, request, Map.class);
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                List<Map> choices = (List<Map>) response.getBody().get("choices");
-                if (choices != null && !choices.isEmpty()) {
-                    Map choice = (Map) choices.get(0);
-                    Map message = (Map) choice.get("message");
-                    String tailored = null;
-                    try {
-                        // Try content field first
-                        Object contentObj = message.get("content");
-                        if (contentObj != null && !contentObj.toString().trim().isEmpty()) {
-                            tailored = contentObj.toString();
+            // Try each model until one works
+            String workingModel = null;
+            for (String m : MODELS) {
+                body.put("model", m);
+                try {
+                    HttpEntity<Map<String, Object>> testReq = new HttpEntity<>(body, headers);
+                    ResponseEntity<Map> testResp = restTemplate.postForEntity(OPENROUTER_URL, testReq, Map.class);
+                    if (testResp.getStatusCode() == HttpStatus.OK) {
+                        workingModel = m;
+                        log.info("Using model: {}", m);
+                        // Process response
+                        List<Map> choices2 = (List<Map>) testResp.getBody().get("choices");
+                        if (choices2 != null && !choices2.isEmpty()) {
+                            Map msg2 = (Map) choices2.get(0).get("message");
+                            Object ct2 = msg2 != null ? msg2.get("content") : null;
+                            if (ct2 != null && !ct2.toString().trim().isEmpty()) {
+                                result.put("resume", ct2.toString().trim());
+                                result.put("feedback", "Resume rewritten by AI using " + m + " to match " + jobTitle + " at " + company + "!");
+                                log.info("AI tailored successfully with model: {}", m);
+                                return result;
+                            }
                         }
-                        // Do NOT use reasoning field - it contains thinking, not the resume
-                        // Log all message keys for debugging
-                        log.info("Message keys: {}, content length: {}", message.keySet(), 
-                            tailored != null ? tailored.length() : 0);
-                    } catch(Exception ex) {
-                        log.error("Parse error: {}", ex.getMessage());
                     }
-                    log.info("AI response length: {}", tailored != null ? tailored.length() : "null");
-                    if (tailored == null || tailored.trim().isEmpty()) {
-                        result.put("resume", resume);
-                        result.put("feedback", "AI returned empty. Please try again.");
-                        return result;
-                    }
-                    result.put("resume", tailored.trim());
-                    result.put("feedback", "Resume rewritten by AI to perfectly match "
-                        + jobTitle + " at " + company + "!");
-                    log.info("OpenRouter AI tailored resume successfully!");
-                    return result;
+                } catch (Exception me) {
+                    log.warn("Model {} failed: {}", m, me.getMessage());
                 }
             }
+            log.error("All models failed - returning original resume");
         } catch (Exception e) {
-            log.error("OpenRouter error: {}", e.getMessage());
-            result.put("feedback", "AI error: " + e.getMessage());
+            String message = e.getMessage() != null ? e.getMessage() : "Unknown error";
+            log.error("OpenRouter error: {}", message);
+            if (message.contains("401")) {
+                result.put("feedback", "OpenRouter authentication failed (401). Check OPENROUTER_API_KEY and restart backend.");
+            } else {
+                result.put("feedback", "AI error: " + message);
+            }
         }
         result.put("resume", resume);
-        result.put("feedback", "AI tailoring failed. Please try again.");
+        result.putIfAbsent("feedback", "AI tailoring failed. Please try again.");
         return result;
+    }
+
+    private String sanitizeApiKey(String rawKey) {
+        if (rawKey == null) return null;
+        String key = rawKey.trim();
+        if (key.isEmpty()) return null;
+        // Guard against placeholder values and accidentally pasted non-key tokens.
+        if ("your_openrouter_key_here".equalsIgnoreCase(key) || !key.startsWith("sk-or-")) {
+            return null;
+        }
+        return key;
     }
 
     private Map<String, Object> deepAnalyze(String resume, String jd) {
