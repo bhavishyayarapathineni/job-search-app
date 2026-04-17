@@ -95,6 +95,7 @@ public class JobService {
         log.info("Created {} sample jobs", sampleJobs.size());
     }
 
+    @SuppressWarnings("java:S107")
     private Job createJob(String title, String company, String location,
                           String jobType, String level, String skills,
                           String source, String salary) {

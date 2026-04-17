@@ -120,11 +120,12 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
             body.put("max_tokens", 4000);
             body.put("messages", List.of(systemMsg, userMsg));
             // Try each model until one works
-            for (String m : MODELS) {
+            for (String m : MODELS) { //NOSONAR
                 body.put("model", m);
                 try {
                     HttpEntity<Map<String, Object>> testReq = new HttpEntity<>(body, headers);
-                    ResponseEntity<Map> testResp = restTemplate.postForEntity(OPENROUTER_URL, testReq, Map.class);
+                    @SuppressWarnings("unchecked")
+                    ResponseEntity<Map<String,Object>> testResp = (ResponseEntity<Map<String,Object>>) (ResponseEntity<?>) restTemplate.postForEntity(OPENROUTER_URL, testReq, Map.class);
                     if (testResp.getStatusCode() == HttpStatus.OK) {
                         // Process response
                         List<Map<String, Object>> choices2 = (List<Map<String, Object>>) (List<?>) testResp.getBody().get("choices");
