@@ -16,34 +16,37 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class JobService {
+    private static final String POSTED_AT = "postedAt";
+    private static final String FULL_TIME = "FULL_TIME";
+    private static final String SENIOR = "SENIOR";
 
     private final JobRepository jobRepository;
 
     // Get all jobs with pagination
     public Page<Job> getAllJobs(int page, int size) {
         Pageable pageable = PageRequest.of(page, size,
-                Sort.by("postedAt").descending());
+                Sort.by(POSTED_AT).descending());
         return jobRepository.findByIsActiveTrue(pageable);
     }
 
     // Search jobs by keyword
     public Page<Job> searchJobs(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size,
-                Sort.by("postedAt").descending());
+                Sort.by(POSTED_AT).descending());
         return jobRepository.searchJobs(keyword, pageable);
     }
 
     // Filter by job type
     public Page<Job> getJobsByType(String jobType, int page, int size) {
         Pageable pageable = PageRequest.of(page, size,
-                Sort.by("postedAt").descending());
+                Sort.by(POSTED_AT).descending());
         return jobRepository.findByJobTypeAndIsActiveTrue(jobType, pageable);
     }
 
     // Filter by experience level
     public Page<Job> getJobsByExperience(String level, int page, int size) {
         Pageable pageable = PageRequest.of(page, size,
-                Sort.by("postedAt").descending());
+                Sort.by(POSTED_AT).descending());
         return jobRepository.findByExperienceLevelAndIsActiveTrue(
                 level, pageable);
     }
@@ -67,23 +70,23 @@ public class JobService {
 
         List<Job> sampleJobs = List.of(
             createJob("Senior Java Developer", "PayPal",
-                    "San Jose, CA", "FULL_TIME", "SENIOR",
+                    "San Jose, CA", FULL_TIME, SENIOR,
                     "Spring Boot, Microservices, Kafka, Docker",
                     "LinkedIn", "$150k-$180k"),
             createJob("Java Full Stack Engineer", "Bank of America",
-                    "Charlotte, NC", "FULL_TIME", "SENIOR",
+                    "Charlotte, NC", FULL_TIME, SENIOR,
                     "Java, React, Azure, Spring Boot",
                     "Indeed", "$140k-$170k"),
             createJob("Backend Java Developer", "Capco",
-                    "Charlotte, NC", "FULL_TIME", "MID",
+                    "Charlotte, NC", FULL_TIME, "MID",
                     "Java, Spring Boot, Microservices, REST APIs",
                     "LinkedIn", "$120k-$145k"),
             createJob("Full Stack Developer", "VLink",
-                    "Burlington, MA", "FULL_TIME", "SENIOR",
+                    "Burlington, MA", FULL_TIME, SENIOR,
                     "React, TypeScript, Node.js, AWS",
                     "Dice", "$130k-$160k"),
             createJob("Java Developer", "Freddie Mac",
-                    "McLean, VA", "FULL_TIME", "MID",
+                    "McLean, VA", FULL_TIME, "MID",
                     "Java, Spring Boot, AWS, PostgreSQL",
                     "Indeed", "$115k-$140k")
         );

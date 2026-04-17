@@ -15,6 +15,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class JobScraperService {
+    private static final String TITLE = "title";
+    private static final String DESCRIPTION = "description";
 
     private final JobEventProducer jobEventProducer;
     private final ObjectMapper objectMapper;
@@ -81,18 +83,18 @@ public class JobScraperService {
             int count = 0;
             for (JsonNode node : results) {
                 Job job = new Job();
-                job.setTitle(getText(node, "title"));
+                job.setTitle(getText(node, TITLE));
                 job.setCompany(node.path("company")
                         .path("display_name").asText("Unknown"));
                 job.setLocation(node.path("location")
                         .path("display_name").asText("USA"));
-                job.setDescription(getText(node, "description"));
-                job.setJobType(detectJobType(getText(node, "title") + " " + getText(node, "description")));
+                job.setDescription(getText(node, DESCRIPTION));
+                job.setJobType(detectJobType(getText(node, TITLE) + " " + getText(node, DESCRIPTION)));
                 job.setSource("Adzuna");
                 job.setSourceUrl(getText(node, "redirect_url"));
-                job.setExperienceLevel(detectLevel(getText(node, "title")));
+                job.setExperienceLevel(detectLevel(getText(node, TITLE)));
                 job.setSalary(getSalary(node));
-                job.setSkills(extractSkills(getText(node, "description")));
+                job.setSkills(extractSkills(getText(node, DESCRIPTION)));
                 jobEventProducer.publishNewJob(job);
                 count++;
             }
