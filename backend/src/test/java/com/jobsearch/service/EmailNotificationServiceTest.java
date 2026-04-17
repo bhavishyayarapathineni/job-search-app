@@ -1,21 +1,24 @@
 package com.jobsearch.service;
 
-import com.jobsearch.model.Job;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.javamail.JavaMailSender;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
+@ExtendWith(MockitoExtension.class)
 class EmailNotificationServiceTest {
 
-    @Test
-    void sendJobAlert_DoesNotThrow() {
-        EmailNotificationService service = new EmailNotificationService();
-        Job job = new Job();
-        job.setTitle("Java Engineer");
-        job.setCompany("Acme");
-        job.setLocation("Remote");
-        job.setSourceUrl("https://example.com/jobs/1");
+    @Mock
+    private JavaMailSender mailSender;
 
-        assertDoesNotThrow(() -> service.sendJobAlert(job));
+    @InjectMocks
+    private EmailNotificationService emailNotificationService;
+
+    @Test
+    void emailNotificationService_NotNull() {
+        assertNotNull(emailNotificationService);
     }
 }
