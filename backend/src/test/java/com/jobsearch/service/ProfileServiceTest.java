@@ -86,8 +86,8 @@ class ProfileServiceTest {
     @Test
     void updateProfile_UserNotFound_ThrowsException() {
         when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () ->
-            profileService.updateProfile("notfound@gmail.com", new UserProfile()));
+        UserProfile empty = new UserProfile();
+        assertThrows(RuntimeException.class, () -> profileService.updateProfile("notfound@gmail.com", empty));
     }
 
     @Test
@@ -117,7 +117,6 @@ class ProfileServiceTest {
     void saveJob_JobNotFound_ThrowsException() {
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(testUser));
         when(jobRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () ->
-            profileService.saveJob("test@gmail.com", 99L));
+        assertThrows(RuntimeException.class, () -> profileService.saveJob("test@gmail.com", 99L));
     }
 }

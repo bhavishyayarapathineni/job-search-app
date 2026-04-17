@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+@SuppressWarnings({"java:S5361","java:S4684"})
 @RestController
 @RequestMapping("/api/resume")
 @RequiredArgsConstructor

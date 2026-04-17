@@ -126,9 +126,9 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
                     ResponseEntity<Map> testResp = restTemplate.postForEntity(OPENROUTER_URL, testReq, Map.class);
                     if (testResp.getStatusCode() == HttpStatus.OK) {
                         // Process response
-                        List<Map> choices2 = (List<Map>) testResp.getBody().get("choices");
+                        List<Map<String, Object>> choices2 = (List<Map<String, Object>>) (List<?>) testResp.getBody().get("choices");
                         if (choices2 != null && !choices2.isEmpty()) {
-                            Map msg2 = (Map) choices2.get(0).get("message");
+                            Map<String, Object> msg2 = (Map<String, Object>) choices2.get(0).get("message");
                             Object ct2 = msg2 != null ? msg2.get(KEY_CONTENT) : null;
                             if (ct2 != null && !ct2.toString().trim().isEmpty()) {
                                 result.put(KEY_RESUME, ct2.toString().trim());
