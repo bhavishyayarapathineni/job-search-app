@@ -48,6 +48,33 @@ A full-stack job search platform that scrapes 23,000+ real jobs daily and uses A
 | GitHub Actions | CI/CD pipeline |
 
 ## 🏗 Architecture
+┌─────────────────────────────────────────────────────────┐
+│                   React 18 Frontend                      │
+│              (TypeScript + Axios)                        │
+└──────────────────────┬──────────────────────────────────┘
+│ REST API (JWT Auth)
+┌──────────────────────▼──────────────────────────────────┐
+│                 Spring Boot Backend                       │
+│                                                          │
+│  ┌─────────────┐  ┌────────────┐  ┌─────────────────┐  │
+│  │ AuthService │  │ JobService │  │ AIResumeService │  │
+│  └─────────────┘  └────────────┘  └─────────────────┘  │
+│  ┌─────────────┐  ┌────────────┐  ┌─────────────────┐  │
+│  │ProfileService│ │JobScraper  │  │ EmailService    │  │
+│  └─────────────┘  └─────┬──────┘  └─────────────────┘  │
+└────────────────────────┬┼─────────────────────────────── ┘
+││
+┌───────────────┘│
+│                │
+┌────────▼───────┐  ┌─────▼──────┐  ┌─────────────┐
+│  PostgreSQL 15 │  │   Kafka    │  │   Redis 7   │
+│  (Primary DB)  │  │(Streaming) │  │  (Cache)    │
+└────────────────┘  └─────┬──────┘  └─────────────┘
+│
+┌───────────▼──────────┐
+│   OpenRouter AI API  │
+│  (Resume Tailoring)  │
+└──────────────────────┘
 ## 🚀 Quick Start
 
 ### Prerequisites
