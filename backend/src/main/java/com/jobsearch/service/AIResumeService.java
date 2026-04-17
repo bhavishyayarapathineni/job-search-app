@@ -122,7 +122,7 @@ REWRITE THIS RESUME to be a PERFECT match for this job:
             // Try each model until one works
             for (String m : MODELS) { //NOSONAR
                 body.put("model", m);
-                try {
+                try { //NOSONAR nested try is intentional for model fallback
                     HttpEntity<Map<String, Object>> testReq = new HttpEntity<>(body, headers);
                     @SuppressWarnings("unchecked")
                     ResponseEntity<Map<String,Object>> testResp = (ResponseEntity<Map<String,Object>>) (ResponseEntity<?>) restTemplate.postForEntity(OPENROUTER_URL, testReq, Map.class);
