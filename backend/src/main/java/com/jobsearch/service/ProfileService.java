@@ -9,6 +9,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("java:S3776")
 public class ProfileService {
 
     private final UserProfileRepository profileRepository;

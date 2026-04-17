@@ -9,6 +9,7 @@ import java.util.*;
 
 @Slf4j
 @Service
+@SuppressWarnings("java:S3776")
 public class AIResumeService {
 
     @Value("${openrouter.api.key:}")

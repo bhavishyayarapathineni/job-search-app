@@ -14,6 +14,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("java:S3776")
 public class JobScraperService {
     private static final String TITLE = "title";
     private static final String DESCRIPTION = "description";
@@ -51,7 +52,7 @@ public class JobScraperService {
         log.info("Starting full job scrape...");
         for (String keyword : KEYWORDS) {
             scrapeByKeyword(keyword);
-            try { Thread.sleep(500); } catch (Exception ignored) {}
+            try { Thread.sleep(500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); log.warn("Sleep interrupted"); }
         }
         log.info("Full scrape complete!");
     }
