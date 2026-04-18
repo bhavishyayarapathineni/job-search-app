@@ -62,6 +62,9 @@ export default function Jobs() {
 
   
   const [savedJobs, setSavedJobs] = useState<number[]>([]);
+  const [coverLetter, setCoverLetter] = useState('');
+  const [coverLetterJob, setCoverLetterJob] = useState<any>(null);
+  const [coverLetterLoading, setCoverLetterLoading] = useState(false);
 
   useEffect(() => {
     API.get('/api/profile/jobs/saved')
@@ -81,6 +84,32 @@ export default function Jobs() {
     } catch (e) {
       alert('Failed. Please try again.');
     }
+  };
+
+  const handleCoverLetter = async (job: any) => {
+    setCoverLetterJob(job);
+    setCoverLetter('');
+    setCoverLetterLoading(true);
+    try {
+      const res = await API.post('/api/cover-letter/generate', {
+        jobTitle: job.title,
+        company: job.company,
+        jobDescription: job.description || ''
+      });
+      setCoverLetter(res.data.coverLetter);
+    } catch (e) {
+      setCoverLetter('Failed to generate. Please try again.');
+    } finally {
+      setCoverLetterLoading(false);
+    }
+  };
+
+  const handleDownloadCoverLetter = () => {
+    const html = `<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;font-size:11pt;line-height:1.6;}</style></head><body><pre style="white-space:pre-wrap;font-family:Arial">${coverLetter}</pre></body></html>`;
+    const blob = new Blob([html], {type:'text/html'});
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if (w) { w.onload = () => { setTimeout(() => w.print(), 500); }; }
   };
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -282,6 +311,9 @@ export default function Jobs() {
 
               <div style={s.cardActions}>
                 <button style={s.aiBtn} onClick={() => setAiJob(job)}>🤖 AI Tailor</button>
+                <button style={s.coverBtn} onClick={() => handleCoverLetter(job)}>
+                  Cover Letter
+                </button>
                 <button style={s.applyBtn}
                   onClick={() => job.sourceUrl ? window.open(job.sourceUrl, '_blank') : null}>
                   Apply Now
@@ -318,8 +350,39 @@ export default function Jobs() {
           </button>
         </div>
       </div>
+      {coverLetterJob && (
+        <div style={s.overlay}>
+          <div style={s.modal}>
+            <div style={s.modalHeader}>
+              <div>
+                <h2 style={s.modalTitle}>Cover Letter</h2>
+                <p style={s.modalSub}>{coverLetterJob.title} at {coverLetterJob.company}</p>
+              </div>
+              <button style={s.closeBtn} onClick={() => setCoverLetterJob(null)}>X</button>
+            </div>
+            <div style={{padding:24}}>
+              {coverLetterLoading ? (
+                <div style={{textAlign:'center',padding:'40px 0'}}>
+                  <p>Generating your cover letter...</p>
+                </div>
+              ) : (
+                <div>
+                  <textarea style={{width:'100%',height:320,padding:12,borderRadius:8,border:'1.5px solid #ddd',fontSize:13,fontFamily:'inherit',resize:'vertical',boxSizing:'border-box'}}
+                    value={coverLetter} onChange={e => setCoverLetter(e.target.value)} />
+                  <div style={{display:'flex',gap:12,marginTop:12}}>
+                    <button style={{flex:1,padding:12,background:'#2e7d32',color:'white',border:'none',borderRadius:8,fontSize:14,fontWeight:600,cursor:'pointer'}}
+                      onClick={handleDownloadCoverLetter}>Download PDF</button>
+                    <button style={{padding:'12px 16px',background:'white',color:'#2d6a9f',border:'1.5px solid #2d6a9f',borderRadius:8,fontSize:13,cursor:'pointer'}}
+                      onClick={() => setCoverLetterJob(null)}>Close</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {aiJob && (
-        <AIResumeTailor
+      <AIResumeTailor
           jobTitle={aiJob.title}
           company={aiJob.company}
           jobDescription={aiJob.description}
@@ -386,6 +449,13 @@ const s: { [key: string]: React.CSSProperties } = {
   applyBtn: { flex: 1, padding: '9px', background: '#2d6a9f', color: 'white',
     border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
   savedJobBtn: { flex:1, padding:'9px', background:'#ffebee', color:'#c62828', border:'1.5px solid #c62828', borderRadius:8, cursor:'pointer', fontWeight:600, fontSize:13 },
+  overlay: { position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:16 },
+  modal: { background:'white', borderRadius:16, width:'100%', maxWidth:640, maxHeight:'90vh', overflow:'auto', boxShadow:'0 20px 60px rgba(0,0,0,0.3)' },
+  modalHeader: { padding:'20px 24px 16px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems:'flex-start' },
+  modalTitle: { fontSize:20, fontWeight:700, margin:0, color:'#1e3a5f' },
+  modalSub: { fontSize:13, color:'#666', margin:'3px 0 0' },
+  closeBtn: { background:'none', border:'none', fontSize:20, cursor:'pointer', color:'#666' },
+  coverBtn: { flex:1, padding:'9px', background:'#f0f4ff', color:'#2d6a9f', border:'1.5px solid #c5d8f8', borderRadius:8, cursor:'pointer', fontWeight:600, fontSize:13 },
   saveBtn: { padding: '9px 16px', background: 'white', color: '#2d6a9f',
     border: '1.5px solid #2d6a9f', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 },
   pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center',
