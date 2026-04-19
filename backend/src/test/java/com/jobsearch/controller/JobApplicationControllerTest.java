@@ -1,6 +1,7 @@
 package com.jobsearch.controller;
 
 import com.jobsearch.model.JobApplication;
+import com.jobsearch.dto.JobApplicationRequest;
 import com.jobsearch.service.JobApplicationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,8 +28,9 @@ class JobApplicationControllerTest {
         app.setJobTitle("Engineer");
         app.setCompany("Google");
         when(authentication.getName()).thenReturn("test@gmail.com");
+        JobApplicationRequest req = new JobApplicationRequest();
         when(jobApplicationService.create(any(), eq("test@gmail.com"))).thenReturn(app);
-        ResponseEntity<JobApplication> response = jobApplicationController.create(app, authentication);
+        ResponseEntity<JobApplication> response = jobApplicationController.create(req, authentication);
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
     }

@@ -1,5 +1,6 @@
 package com.jobsearch.controller;
 
+import com.jobsearch.dto.JobApplicationRequest;
 import com.jobsearch.model.JobApplication;
 import com.jobsearch.service.JobApplicationService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,8 @@ public class JobApplicationController {
 
     @PostMapping
     public ResponseEntity<JobApplication> create(
-            @RequestBody JobApplication app, Authentication auth) {
-        return ResponseEntity.ok(jobApplicationService.create(app, auth.getName()));
+            @RequestBody JobApplicationRequest request, Authentication auth) {
+        return ResponseEntity.ok(jobApplicationService.create(request, auth.getName()));
     }
 
     @GetMapping
@@ -41,9 +42,9 @@ public class JobApplicationController {
     @PutMapping("/{id}")
     public ResponseEntity<JobApplication> update(
             @PathVariable Long id,
-            @RequestBody JobApplication app,
+            @RequestBody JobApplicationRequest request,
             Authentication auth) {
-        return ResponseEntity.ok(jobApplicationService.update(id, app, auth.getName()));
+        return ResponseEntity.ok(jobApplicationService.update(id, request, auth.getName()));
     }
 
     @DeleteMapping("/{id}")

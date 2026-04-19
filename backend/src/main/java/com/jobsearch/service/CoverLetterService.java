@@ -1,32 +1,27 @@
 package com.jobsearch.service;
-
 import com.jobsearch.repository.UserProfileRepository;
 import com.jobsearch.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import java.util.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CoverLetterService {
-
     private final UserRepository userRepository;
     private final UserProfileRepository profileRepository;
 
     @Value("${openrouter.api.key:}")
     private String apiKey;
 
-    public String generate(String jobTitle, String company, String jobDescription, String email) {
-        String resume = userRepository.findByEmail(email)
+    public String generate(String jobTitle, String company, String email) {
+        String resumeText = userRepository.findByEmail(email)
             .flatMap(user -> profileRepository.findByUserId(user.getId()))
             .map(p -> p.getResumeText() != null ? p.getResumeText() : "")
             .orElse("");
-
+        log.debug("Generating cover letter for {} at {} with resume length {}", jobTitle, company, resumeText.length());
         return generateTemplate(jobTitle, company);
     }
 

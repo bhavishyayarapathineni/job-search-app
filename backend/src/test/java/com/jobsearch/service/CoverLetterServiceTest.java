@@ -22,7 +22,7 @@ class CoverLetterServiceTest {
     void generate_NoProfile_ReturnsTemplate() {
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.empty());
         String result = coverLetterService.generate(
-            "Java Developer", "Google", "We need Java skills", "test@gmail.com"
+            "Java Developer", "Google", "test@gmail.com"
         );
         assertNotNull(result);
         assertTrue(result.contains("Google"));
@@ -33,7 +33,7 @@ class CoverLetterServiceTest {
     void generate_NotNull() {
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.empty());
         String result = coverLetterService.generate(
-            "Software Engineer", "Amazon", "Java Spring Boot", "test@gmail.com"
+            "Software Engineer", "Amazon", "test@gmail.com"
         );
         assertNotNull(result);
     }

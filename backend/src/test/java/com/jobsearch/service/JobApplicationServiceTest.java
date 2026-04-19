@@ -1,6 +1,7 @@
 package com.jobsearch.service;
 
 import com.jobsearch.model.JobApplication;
+import com.jobsearch.dto.JobApplicationRequest;
 import com.jobsearch.model.User;
 import com.jobsearch.repository.JobApplicationRepository;
 import com.jobsearch.repository.UserRepository;
@@ -44,7 +45,10 @@ class JobApplicationServiceTest {
     void create_Success() {
         when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
         when(jobApplicationRepository.save(any())).thenReturn(app);
-        JobApplication result = jobApplicationService.create(app, "test@gmail.com");
+        JobApplicationRequest request = new JobApplicationRequest();
+        request.setJobTitle("Software Engineer");
+        request.setCompany("Google");
+        JobApplication result = jobApplicationService.create(request, "test@gmail.com");
         assertNotNull(result);
         assertEquals("Software Engineer", result.getJobTitle());
         verify(jobApplicationRepository, times(1)).save(any());
@@ -53,7 +57,7 @@ class JobApplicationServiceTest {
     @Test
     void create_UserNotFound_ThrowsException() {
         when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> jobApplicationService.create(app, "notfound@gmail.com"));
+        assertThrows(RuntimeException.class, () -> jobApplicationService.create(new JobApplicationRequest(), "notfound@gmail.com"));
     }
 
     @Test

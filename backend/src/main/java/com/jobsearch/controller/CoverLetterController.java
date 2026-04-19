@@ -1,5 +1,4 @@
 package com.jobsearch.controller;
-
 import com.jobsearch.service.CoverLetterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class CoverLetterController {
-
     private final CoverLetterService coverLetterService;
 
     @PostMapping("/generate")
@@ -22,7 +20,6 @@ public class CoverLetterController {
         String coverLetter = coverLetterService.generate(
             request.get("jobTitle"),
             request.get("company"),
-            request.get("jobDescription"),
             auth.getName()
         );
         return ResponseEntity.ok(Map.of("coverLetter", coverLetter));
