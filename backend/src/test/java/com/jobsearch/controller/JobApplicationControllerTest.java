@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class JobApplicationControllerTest {
@@ -61,4 +62,37 @@ class JobApplicationControllerTest {
         ResponseEntity<Void> response = jobApplicationController.delete(1L, authentication);
         assertEquals(200, response.getStatusCode().value());
     }
+    @Test
+    void update_ReturnsUpdated() {
+        JobApplication app = new JobApplication();
+        app.setJobTitle("Senior Engineer");
+        JobApplicationRequest req = new JobApplicationRequest();
+        req.setJobTitle("Senior Engineer");
+        when(authentication.getName()).thenReturn("test@gmail.com");
+        when(jobApplicationService.update(eq(1L), any(), eq("test@gmail.com"))).thenReturn(app);
+        ResponseEntity<JobApplication> response = jobApplicationController.update(1L, req, authentication);
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void updateStatus_AllStatuses() {
+        JobApplication app = new JobApplication();
+        when(authentication.getName()).thenReturn("test@gmail.com");
+        for (String status : new String[]{"APPLIED","PHONE_SCREEN","INTERVIEW","OFFER","REJECTED"}) {
+            when(jobApplicationService.updateStatus(eq(1L), any(), eq("test@gmail.com"))).thenReturn(app);
+            ResponseEntity<JobApplication> response = jobApplicationController.updateStatus(1L, java.util.Map.of("status", status), authentication);
+            assertEquals(200, response.getStatusCode().value());
+        }
+    }
+
+    @Test
+    void getAll_EmptyList_ReturnsOk() {
+        when(authentication.getName()).thenReturn("test@gmail.com");
+        when(jobApplicationService.getAll("test@gmail.com")).thenReturn(java.util.List.of());
+        ResponseEntity<java.util.List<JobApplication>> response = jobApplicationController.getAll(authentication);
+        assertEquals(200, response.getStatusCode().value());
+        assertTrue(response.getBody().isEmpty());
+    }
+
 }

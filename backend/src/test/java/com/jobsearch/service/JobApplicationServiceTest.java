@@ -100,4 +100,55 @@ class JobApplicationServiceTest {
         assertThrows(RuntimeException.class, () ->
             jobApplicationService.delete(1L, "other@gmail.com"));
     }
+    @Test
+    void update_Success() {
+        JobApplicationRequest request = new JobApplicationRequest();
+        request.setJobTitle("Senior Engineer");
+        request.setCompany("Google");
+        request.setLocation("Remote");
+        request.setSalary("$200,000");
+        request.setJobUrl("https://google.com");
+        request.setNotes("Updated notes");
+        when(jobApplicationRepository.findById(1L)).thenReturn(Optional.of(app));
+        when(jobApplicationRepository.save(any())).thenReturn(app);
+        JobApplication result = jobApplicationService.update(1L, request, "test@gmail.com");
+        assertNotNull(result);
+        verify(jobApplicationRepository, times(1)).save(any());
+    }
+
+    @Test
+    void update_Unauthorized_ThrowsException() {
+        when(jobApplicationRepository.findById(1L)).thenReturn(Optional.of(app));
+        assertThrows(RuntimeException.class, () ->
+            jobApplicationService.update(1L, new JobApplicationRequest(), "other@gmail.com"));
+    }
+
+    @Test
+    void update_NotFound_ThrowsException() {
+        when(jobApplicationRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () ->
+            jobApplicationService.update(99L, new JobApplicationRequest(), "test@gmail.com"));
+    }
+
+    @Test
+    void updateStatus_NotFound_ThrowsException() {
+        when(jobApplicationRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () ->
+            jobApplicationService.updateStatus(99L, JobApplication.ApplicationStatus.INTERVIEW, "test@gmail.com"));
+    }
+
+    @Test
+    void getAll_UserNotFound_ThrowsException() {
+        when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () ->
+            jobApplicationService.getAll("notfound@gmail.com"));
+    }
+
+    @Test
+    void delete_NotFound_ThrowsException() {
+        when(jobApplicationRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () ->
+            jobApplicationService.delete(99L, "test@gmail.com"));
+    }
+
 }
