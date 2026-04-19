@@ -12,8 +12,7 @@ class JwtUtilsTest {
     @BeforeEach
     void setUp() {
         jwtUtils = new JwtUtils();
-        ReflectionTestUtils.setField(jwtUtils, "jwtSecret",
-            "mySecretKeyForJWTTokenGenerationMustBe256BitsLongAtLeast123456");
+        ReflectionTestUtils.setField(jwtUtils, "jwtSecret", "mySecretKeyForJWTTokenGenerationMustBe256BitsLongAtLeast1234567890AbCdEf");
         ReflectionTestUtils.setField(jwtUtils, "jwtExpiration", 86400000L);
     }
 
@@ -26,9 +25,9 @@ class JwtUtilsTest {
 
     @Test
     void getEmailFromToken_ReturnsCorrectEmail() {
-        String email = "test@gmail.com";
-        String token = jwtUtils.generateToken(email);
-        assertEquals(email, jwtUtils.getEmailFromToken(token));
+        String token = jwtUtils.generateToken("test@gmail.com");
+        String email = jwtUtils.getEmailFromToken(token);
+        assertEquals("test@gmail.com", email);
     }
 
     @Test
@@ -43,12 +42,12 @@ class JwtUtilsTest {
     }
 
     @Test
-    void validateToken_NullToken_ReturnsFalse() {
-        try { assertFalse(jwtUtils.validateToken(null)); } catch(Exception e) { assertTrue(true); }
+    void validateToken_EmptyToken_ReturnsFalse() {
+        assertFalse(jwtUtils.validateToken("not.a.valid.jwt.token"));
     }
 
     @Test
-    void generateToken_DifferentEmails_DifferentTokens() {
+    void generateToken_DifferentEmails_ReturnsDifferentTokens() {
         String token1 = jwtUtils.generateToken("user1@gmail.com");
         String token2 = jwtUtils.generateToken("user2@gmail.com");
         assertNotEquals(token1, token2);

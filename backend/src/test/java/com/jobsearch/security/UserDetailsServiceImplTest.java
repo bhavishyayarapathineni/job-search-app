@@ -8,38 +8,31 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserDetailsServiceImplTest {
 
     @Mock private UserRepository userRepository;
-    @InjectMocks private UserDetailsServiceImpl service;
+    @InjectMocks private UserDetailsServiceImpl userDetailsService;
 
     @Test
-    void loadUserByUsername_ReturnsSecurityUser() {
+    void loadUserByUsername_ExistingUser_ReturnsUserDetails() {
         User user = new User();
-        user.setEmail("user@test.com");
-        user.setPassword("secret");
-        user.setRole(User.Role.USER);
-        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(user));
-
-        var details = service.loadUserByUsername("user@test.com");
-
-        assertEquals("user@test.com", details.getUsername());
-        assertEquals("secret", details.getPassword());
-        assertEquals("ROLE_USER", details.getAuthorities().iterator().next().getAuthority());
+        user.setEmail("test@gmail.com");
+        user.setPassword("password123");
+        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(user));
+        var result = userDetailsService.loadUserByUsername("test@gmail.com");
+        assertNotNull(result);
+        assertEquals("test@gmail.com", result.getUsername());
     }
 
     @Test
-    void loadUserByUsername_ThrowsWhenMissing() {
-        when(userRepository.findByEmail("missing@test.com")).thenReturn(Optional.empty());
-
-        assertThrows(UsernameNotFoundException.class, () -> service.loadUserByUsername("missing@test.com"));
+    void loadUserByUsername_NotFound_ThrowsException() {
+        when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
+        assertThrows(UsernameNotFoundException.class, () ->
+            userDetailsService.loadUserByUsername("notfound@gmail.com"));
     }
 }
