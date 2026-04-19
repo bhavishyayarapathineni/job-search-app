@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
 @Tag(name = "Profile", description = "User profile and saved jobs")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:3000", "https://bhavishyayarapathineni.github.io"})
 public class ProfileController {
 
     private final ProfileService profileService;

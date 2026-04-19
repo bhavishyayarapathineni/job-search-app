@@ -13,7 +13,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:3000", "https://bhavishyayarapathineni.github.io"})
 public class AIResumeController {
 
     private final AIResumeService aiResumeService;

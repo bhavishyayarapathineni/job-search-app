@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/cover-letter")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:3000", "https://bhavishyayarapathineni.github.io"})
 public class CoverLetterController {
     private final CoverLetterService coverLetterService;
 

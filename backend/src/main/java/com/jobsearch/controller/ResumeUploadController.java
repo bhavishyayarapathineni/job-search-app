@@ -21,7 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/resume")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:3000", "https://bhavishyayarapathineni.github.io"})
 public class ResumeUploadController {
 
     private final UserProfileRepository profileRepository;
