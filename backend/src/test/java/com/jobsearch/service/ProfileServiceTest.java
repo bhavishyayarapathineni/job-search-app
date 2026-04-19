@@ -119,4 +119,28 @@ class ProfileServiceTest {
         when(jobRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> profileService.saveJob("test@gmail.com", 99L));
     }
+    @Test
+    void unsaveJob_RemovesJob() {
+        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(testUser));
+        doNothing().when(savedJobRepository).deleteByUserIdAndJobId(1L, 1L);
+        profileService.unsaveJob("test@gmail.com", 1L);
+        verify(savedJobRepository, times(1)).deleteByUserIdAndJobId(1L, 1L);
+    }
+
+    @Test
+    void unsaveJob_UserNotFound_ThrowsException() {
+        when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> profileService.unsaveJob("notfound@gmail.com", 1L));
+    }
+
+    @Test
+    void getSavedJobs_ReturnsList() {
+        SavedJob savedJob = new SavedJob();
+        savedJob.setJob(testJob);
+        when(userRepository.findByEmail("test@gmail.com")).thenReturn(Optional.of(testUser));
+        when(savedJobRepository.findByUserId(1L)).thenReturn(java.util.List.of(savedJob));
+        var result = profileService.getSavedJobs("test@gmail.com");
+        assertEquals(1, result.size());
+    }
+
 }
