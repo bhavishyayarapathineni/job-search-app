@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Jobs from './pages/Jobs';
 import ProfilePage from './pages/Profile';
+import Kanban from './pages/Kanban';
 
 const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
   const token = localStorage.getItem('token');
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/jobs" element={<PrivateRoute><Jobs /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+        <Route path="/kanban" element={<PrivateRoute><Kanban /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

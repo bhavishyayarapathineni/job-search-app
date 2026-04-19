@@ -112,6 +112,21 @@ export default function Jobs() {
     if (w) { w.onload = () => { setTimeout(() => w.print(), 500); }; }
   };
 
+  const handleApply = async (job: any) => {
+    try {
+      await API.post('/api/applications', {
+        jobTitle: job.title,
+        company: job.company,
+        location: job.location,
+        salary: job.salary,
+        jobUrl: job.sourceUrl,
+        status: 'APPLIED',
+        notes: 'Applied via Job Search App'
+      });
+    } catch (e) { console.error('Failed to add to tracker'); }
+    if (job.sourceUrl) window.open(job.sourceUrl, '_blank');
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -158,6 +173,7 @@ export default function Jobs() {
       <div style={s.navbar}>
         <span style={s.navTitle}>Job Search App</span>
         <div style={s.navRight}>
+          <button style={s.profileBtn} onClick={() => navigate('/kanban')}>🎯 Job Tracker</button>
           <button style={s.profileBtn} onClick={() => navigate('/profile')}>
             <span style={s.avatarSmall}>{user.fullName?.charAt(0)}</span>
             {user.fullName}
@@ -315,7 +331,7 @@ export default function Jobs() {
                   Cover Letter
                 </button>
                 <button style={s.applyBtn}
-                  onClick={() => job.sourceUrl ? window.open(job.sourceUrl, '_blank') : null}>
+                  onClick={() => handleApply(job)}>
                   Apply Now
                 </button>
                 <button style={savedJobs.includes(job.id) ? s.savedJobBtn : s.saveBtn}
