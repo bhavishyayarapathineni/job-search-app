@@ -57,9 +57,9 @@ class JobApplicationServiceTest {
     @Test
     void create_UserNotFound_ThrowsException() {
         when(userRepository.findByEmail("notfound@gmail.com")).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () -> {
-            jobApplicationService.create(new JobApplicationRequest(), "notfound@gmail.com");
-        });
+        JobApplicationRequest req = new JobApplicationRequest();
+        Exception exception = assertThrows(RuntimeException.class, () -> jobApplicationService.create(req, "notfound@gmail.com"));
+        assertNotNull(exception);
     }
 
     @Test
