@@ -119,15 +119,15 @@ class JobApplicationServiceTest {
     @Test
     void update_Unauthorized_ThrowsException() {
         when(jobApplicationRepository.findById(1L)).thenReturn(Optional.of(app));
-        assertThrows(RuntimeException.class, () ->
-            jobApplicationService.update(1L, new JobApplicationRequest(), "other@gmail.com"));
+        JobApplicationRequest req1 = new JobApplicationRequest();
+        assertThrows(RuntimeException.class, () -> jobApplicationService.update(1L, req1, "other@gmail.com"));
     }
 
     @Test
     void update_NotFound_ThrowsException() {
         when(jobApplicationRepository.findById(99L)).thenReturn(Optional.empty());
-        assertThrows(RuntimeException.class, () ->
-            jobApplicationService.update(99L, new JobApplicationRequest(), "test@gmail.com"));
+        JobApplicationRequest req2 = new JobApplicationRequest();
+        assertThrows(RuntimeException.class, () -> jobApplicationService.update(99L, req2, "test@gmail.com"));
     }
 
     @Test
