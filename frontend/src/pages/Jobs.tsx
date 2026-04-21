@@ -70,6 +70,8 @@ export default function Jobs() {
       .then(res => setSavedJobs(res.data.map((s: any) => s.job?.id)))
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSaveJob = async (jobId: number) => {
