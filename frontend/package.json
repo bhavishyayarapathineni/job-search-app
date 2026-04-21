@@ -44,5 +44,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8080"
+  "proxy": "https://job-search-backend.proudtree-37f0d902.northeurope.azurecontainerapps.io"
 }

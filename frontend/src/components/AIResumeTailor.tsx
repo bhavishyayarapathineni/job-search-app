@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://localhost:8080' });
+const API = axios.create({ baseURL: 'https://job-search-backend.proudtree-37f0d902.northeurope.azurecontainerapps.io' });
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
