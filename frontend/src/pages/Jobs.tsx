@@ -43,7 +43,6 @@ export default function Jobs() {
     minSalary: '',
   });
   const navigate = useNavigate();
-  const goToProfile = () => navigate('/profile');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => { loadJobs(0); }, [pageSize]);
@@ -70,6 +69,7 @@ export default function Jobs() {
     API.get('/api/profile/jobs/saved')
       .then(res => setSavedJobs(res.data.map((s: any) => s.job?.id)))
       .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSaveJob = async (jobId: number) => {

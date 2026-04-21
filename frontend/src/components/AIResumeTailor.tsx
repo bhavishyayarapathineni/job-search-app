@@ -82,7 +82,7 @@ export default function AIResumeTailor({ jobTitle, company, jobDescription, onCl
         return;
       }
       if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
-        html += `<div class="bullet">${trimmed.replace(/^[•\-]\s*/, '')}</div>`;
+        html += `<div class="bullet">${trimmed.replace(/^[•-]\s*/, '')}</div>`;
         return;
       }
       if (trimmed.match(/\d{4}/) && (trimmed.includes('|') || trimmed.includes('–') || trimmed.includes('-'))) {
