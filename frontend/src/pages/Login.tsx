@@ -7,7 +7,23 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
+  const [fullName, setFullName] = useState('');
   const navigate = useNavigate();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await axios.post('/api/auth/register', { email, password, fullName, phone: '0000000000' });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify({ email: res.data.email, fullName: res.data.fullName }));
+      navigate('/jobs');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Registration failed');
+    }
+    setLoading(false);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +49,7 @@ export default function Login() {
 
         {error && <div style={styles.error}>{error}</div>}
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={isRegister ? handleRegister : handleLogin}>
           <div style={styles.field}>
             <label style={styles.label}>Email</label>
             <input
@@ -61,9 +77,18 @@ export default function Login() {
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? (isRegister ? 'Registering...' : 'Logging in...') : (isRegister ? 'Register' : 'Login')}
           </button>
         </form>
+        <p style={{textAlign:'center', marginTop:16, fontSize:14, color:'#666'}}>
+          Don't have an account?{' '}
+          <span 
+            style={{color:'#6c63ff', cursor:'pointer', fontWeight:600}}
+            onClick={() => setIsRegister(!isRegister)}
+          >
+            {isRegister ? 'Back to Login' : 'Register'}
+          </span>
+        </p>
       </div>
     </div>
   );
