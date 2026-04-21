@@ -45,7 +45,7 @@ export default function Jobs() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  useEffect(() => { loadJobs(0); }, [pageSize]);
+  useEffect(() => { loadJobs(0); }, [pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadJobs = async (p: number) => {
     setLoading(true);
