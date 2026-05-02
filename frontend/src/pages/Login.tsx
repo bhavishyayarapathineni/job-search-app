@@ -9,7 +9,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
-  const [fullName, setFullName] = useState('');
+  const [fullName, setFullName] = useState(''); // eslint-disable-line @typescript-eslint/no-unused-vars
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
